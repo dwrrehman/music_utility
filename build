@@ -1,0 +1,20 @@
+#!/bin/zsh
+
+if [ "release" = "$1" ]; then
+	clang -c -Ofast audio.c -I /opt/homebrew/include/
+	clang -Ofast -Weverything -Wno-poison-system-directories -Wno-padded -Wno-reserved-identifier -Wno-reserved-id-macro -Wno-deprecated-declarations -fsanitize=address,undefined -I /opt/homebrew/include/ -L /opt/homebrew/lib/ main.c audio.o -o train -lSDL2
+	
+
+elif [ "clean" = "$1" ]; then
+	rm -rf train
+	rm -rf audio.o
+	rm -rf train.dSYM
+
+elif [ "" = "$1" ]; then 
+	clang -c -Ofast audio.c -I /opt/homebrew/include/ 
+	clang -g -O0 -Weverything -Wno-poison-system-directories -Wno-padded -Wno-reserved-identifier -Wno-reserved-id-macro -Wno-deprecated-declarations -fsanitize=address,undefined -I /opt/homebrew/include/ -L /opt/homebrew/lib/ main.c audio.o -o train -lSDL2
+
+else 
+	echo "build: unknown target: $1"
+fi
+
