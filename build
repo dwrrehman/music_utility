@@ -1,14 +1,14 @@
 #!/bin/zsh
 
 if [ "release" = "$1" ]; then
-	clang -Ofast -Weverything -Wno-poison-system-directories -Wno-padded -Wno-reserved-identifier -Wno-reserved-id-macro -Wno-deprecated-declarations -fsanitize=address,undefined -I /opt/homebrew/include/ -L /opt/homebrew/lib/ main.c -o music -lSDL2
+	clang -Ofast -I /opt/homebrew/include/ -L /opt/homebrew/lib/ main.c -o music -lSDL2
 
 elif [ "clean" = "$1" ]; then
 	rm -rf music
 	rm -rf music.dSYM
 
 elif [ "" = "$1" ]; then 
-	clang -g -O0 -Weverything -Wno-poison-system-directories -Wno-padded -Wno-reserved-identifier -Wno-reserved-id-macro -Wno-deprecated-declarations -fsanitize=address,undefined -I /opt/homebrew/include/ -L /opt/homebrew/lib/ main.c -o music -lSDL2
+	clang -g -O0 -Weverything -Wno-poison-system-directories -Wno-padded -Wno-reserved-identifier -Wno-reserved-id-macro -Wno-deprecated-declarations -Wno-declaration-after-statement -fsanitize=address,undefined -I /opt/homebrew/include/ -L /opt/homebrew/lib/ main.c -o music -lSDL2
 
 else 
 	echo "build: unknown target: $1"

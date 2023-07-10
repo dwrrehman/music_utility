@@ -146,48 +146,67 @@ static void callback(void* __attribute__((unused)) userdata, Uint8* stream, int 
 }
 
 static const char* interval_spelling(int diff) {
-	if (diff == 0) return "Unison";
+	if (diff == 0) return "unison";
 
-	if (diff == 1) return "Ascending Minor Second";
-	if (diff == -1) return "Descending Minor Second";
+	if (diff == 1) return "ascending minor second";
+	if (diff == -1) return "descending minor second";
 
-	if (diff == 2) return "Ascending Major Second";
-	if (diff == -2) return "Descending Major Second";
+	if (diff == 2) return "ascending major second";
+	if (diff == -2) return "descending major second";
 
-	if (diff == 3) return "Ascending Minor Third";
-	if (diff == -3) return "Descending Minor Third";
+	if (diff == 3) return "ascending minor third";
+	if (diff == -3) return "descending minor third";
 
-	if (diff == 4) return "Ascending Major Third";
-	if (diff == -4) return "Descending Major Third";
+	if (diff == 4) return "ascending major third";
+	if (diff == -4) return "descending major third";
 
-	if (diff == 5) return "Ascending Perfect Fourth";
-	if (diff == -5) return "Descending Perfect Fourth";
+	if (diff == 5) return "ascending perfect fourth";
+	if (diff == -5) return "descending perfect fourth";
 
-	if (diff == 6) return "Ascending Tri-Tone";
-	if (diff == -6) return "Descending Tri-Tone";
+	if (diff == 6) return "ascending tritone";
+	if (diff == -6) return "descending tritone";
 
-	if (diff == 7) return "Ascending Perfect Fifth";
-	if (diff == -7) return "Descending Perfect Fifth";
+	if (diff == 7) return "ascending perfect fifth";
+	if (diff == -7) return "descending perfect fifth";
 
-	if (diff == 8) return "Ascending Minor Sixth";
-	if (diff == -8) return "Descending Minor Sixth";
+	if (diff == 8) return "ascending minor sixth";
+	if (diff == -8) return "descending minor sixth";
 
-	if (diff == 9) return "Ascending Major Sixth";
-	if (diff == -9) return "Descending Major Sixth";
+	if (diff == 9) return "ascending major sixth";
+	if (diff == -9) return "descending major sixth";
 
-	if (diff == 10) return "Ascending Minor Seventh";
-	if (diff == -10) return "Descending Minor Seventh";
+	if (diff == 10) return "ascending minor seventh";
+	if (diff == -10) return "descending minor seventh";
 
-	if (diff == 11) return "Ascending Major Seventh";
-	if (diff == -11) return "Descending Major Seventh";
+	if (diff == 11) return "ascending major seventh";
+	if (diff == -11) return "descending major seventh";
 		
-	if (diff == 11) return "Ascending Perfect Octave";
-	if (diff == -11) return "Descending Perfect Octave";
+	if (diff == 11) return "ascending perfect octave";
+	if (diff == -11) return "descending perfect octave";
+
+
+	if (diff == 12) return "ascending minor second +8";
+	if (diff == -12) return "descending minor second +8";
+
+	if (diff == 13) return "ascending major second +8";
+	if (diff == -13) return "descending major second +8";
+
+	if (diff == 14) return "ascending minor third +8";
+	if (diff == -14) return "descending minor third +8";
+
+	if (diff == 15) return "ascending major third +8";
+	if (diff == -15) return "descending major third +8";
+
+	if (diff == 16) return "ascending perfect fourth +8";
+	if (diff == -16) return "descending perfect fourth +8";
+
+	if (diff == 17) return "ascending tritone +8";
+	if (diff == -17) return "descending tritone +8";
 
 	return "Undefined Interval";
 }
 
-int main() {
+int main(void) {
 
 	srand((unsigned)time(NULL));
 
@@ -211,7 +230,9 @@ int main() {
 	int mode = training_mode;
 
 	int note1 = 0, note2 = 0;
-	
+
+	printf("type Tab-H for more info.\n");
+
 	while (not quit) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
@@ -226,6 +247,7 @@ int main() {
 				if (tab and key[SDL_SCANCODE_H]) {
 					printf("global: \n"
 						"\ttab-Q : quit\n"
+						"\ttab-H : help\n"
 						"\tescape-1 : keyboard mode\n"
 						"\tescape-2 : relative pitch interval training mode\n"
 						"\tescape-3 : memory mode - unimplemented.\n"
@@ -287,3 +309,8 @@ int main() {
 	SDL_Quit();
 }
 
+
+
+
+
+////todo:      we should implement a utility to help us with our musical memory!!!
