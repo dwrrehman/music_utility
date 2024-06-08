@@ -16,12 +16,50 @@
 #include <unistd.h>
 #include <math.h>
 
+
+
+
+/*
+
+	next todo:
+
+		we should make this utility   play      bach's   art of fugue!!!        each voice has its own stream of notes,
+			
+				and we input the note values by loading a custom file format, 
+
+					and then parsing it into a ds,   and playing the notes!       this would be so cool!    yes lets do this. 
+
+
+
+
+
+
+
+
+
+						this will also help the process of making the memory utility too 
+							but we'll do that after. 
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
 static const double tau = 2.0 * M_PI;
 
 enum modes {
 	keyboard_mode,
-	training_mode,
+	interval_mode,
 	memory_mode,
+	player_mode,
 };
 
 enum note {
@@ -227,7 +265,7 @@ int main(void) {
 
 	bool quit = false, tab = false, escape = false;
 
-	int mode = training_mode;
+	int mode = interval_mode;
 
 	int note1 = 0, note2 = 0;
 
@@ -240,46 +278,46 @@ int main(void) {
 
 			if (event.type == SDL_QUIT) quit = true;
 
-			else if (event.type == SDL_KEYDOWN) {
+			if (event.type != SDL_KEYDOWN) continue;
 
-				if (tab and key[SDL_SCANCODE_Q]) quit = true;
+			if (tab and key[SDL_SCANCODE_Q]) quit = true;
 
-				if (tab and key[SDL_SCANCODE_H]) {
-					printf("global: \n"
-						"\ttab-Q : quit\n"
-						"\ttab-H : help\n"
-						"\tescape-1 : keyboard mode\n"
-						"\tescape-2 : relative pitch interval training mode\n"
-						"\tescape-3 : memory mode - unimplemented.\n"
-						"\ntraining mode:\n"
-						"\tj : reveal current interval textual answer\n"
-						"\te : play current interval\n"
-						"\tr : generate a new ascending-only interval\n"
-						"\tf : generate random two notes\n"
-						"\td : generate a new descending-only interval\n"
-						"\n"
-					);
-				}
+			if (tab and key[SDL_SCANCODE_H]) {
+				printf("global: \n"
+					"\ttab-Q : quit\n"
+					"\ttab-H : help\n"
+					"\tescape-1 : keyboard mode\n"
+					"\tescape-2 : relative pitch interval training mode\n"
+					"\tescape-3 : memory mode - unimplemented.\n"
+					"\ninterval mode keybinds:\n"
+					"\tj : reveal current interval textual answer\n"
+					"\te : play current interval\n"
+					"\tr : generate a new ascending-only interval\n"
+					"\tf : generate random two notes\n"
+					"\td : generate a new descending-only interval\n"
+					"\n"
+				);
+			}
 
-				if (escape and key[SDL_SCANCODE_1]) mode = keyboard_mode;
-				if (escape and key[SDL_SCANCODE_2]) mode = training_mode;
-				if (escape and key[SDL_SCANCODE_3]) mode = memory_mode;
-			
-				if (mode == training_mode and key[SDL_SCANCODE_R]) {
+			if (escape and key[SDL_SCANCODE_1]) { puts("keyboard_mode"); mode = keyboard_mode; }
+			if (escape and key[SDL_SCANCODE_2]) { puts("interval_mode"); mode = interval_mode; }
+			if (escape and key[SDL_SCANCODE_3]) { puts("memory_mode"); mode = memory_mode; }
+		
+			if (mode == interval_mode) {
+				if (key[SDL_SCANCODE_R]) {
 					note1 = (C4 + rand() % 12) % note_count;
 					note2 = (note1 + rand() % 12) % note_count;
 				}
-				if (mode == training_mode and key[SDL_SCANCODE_F]) {
+				if (key[SDL_SCANCODE_F]) {
 					note1 = rand() % note_count;
 					note2 = rand() % note_count;
 				}
-				if (mode == training_mode and key[SDL_SCANCODE_D]) {
+				if (key[SDL_SCANCODE_D]) {
 					note1 = (C4 + rand() % 12) % note_count;
 					note2 = (note1 + rand() % 12) % note_count;
 					int temp = note2; note2 = note1; note1 = temp;
 				}
-				
-				if (mode == training_mode and key[SDL_SCANCODE_E]) {
+				if (key[SDL_SCANCODE_E]) {
 					active[note1] = 1;
 					SDL_Delay(1000);
 					active[note1] = 0;
@@ -288,12 +326,19 @@ int main(void) {
 					SDL_Delay(1000);
 					active[note2] = 0;
 				}
-				
-				if (mode == training_mode and key[SDL_SCANCODE_J]) { 
-					printf("%s   :  note1 = %s, note2 = %s    [diff = %d]\n", 
-						interval_spelling(note2 - note1), note_spelling[note1], note_spelling[note2], note2 - note1 );
+				if (key[SDL_SCANCODE_J]) { 
+					printf("%s   :  note1 = %s, note2 = %s"
+						"    [diff = %d]\n", 
+						interval_spelling(note2 - note1), 
+						note_spelling[note1], 
+						note_spelling[note2], 
+						note2 - note1
+					);
 				}
+			} else if (mode == player_mode) {
+
 			}
+			// for (int n = 0; n < note_count; n++) active[n] = !!key[keybind[n]];
 		}
 
 		const Uint8* key = SDL_GetKeyboardState(0);
@@ -314,3 +359,6 @@ int main(void) {
 
 
 ////todo:      we should implement a utility to help us with our musical memory!!!
+
+
+
