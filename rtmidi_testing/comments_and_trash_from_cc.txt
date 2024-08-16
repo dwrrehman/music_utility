@@ -1,0 +1,240 @@
+trash
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+const int melody[] =   {C4,
+		D4, A4, F4, D4, A4, F4, D4, A4, F4, D4, A4, F4, 
+		D4, Bb4, G4, D4, Bb4, G4, D4, Bb4, G4, D4, Bb4, G4, 
+		Db4, G4, E4, Db4, G4, E4, Db4, Bb4, G4, E4, A4, G4, 
+		F4, D4, F4, A4, F4, A4, D5, A4, D5, F5, D5, F5, 
+		B5, F5, E5, D5, C5, B4, A4, Ab4, Gb4, E4, D5, B4, 
+		C5
+
+	};
+
+	//const int duration[] = { 1,   1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, };
+
+	const int melody_count = sizeof melody / sizeof *melody;
+
+	for (int i = 0; i < melody_count - 1; i++) {
+
+		state[melody[i + 1]] = rising;
+
+		for (int d = 0; d < 1; d++) { // duration[i + 1]
+			nanosleep((const struct timespec[]){{0, 2 * 40000000}}, NULL);
+		}
+
+		state[melody[i]] = falling;
+		nanosleep((const struct timespec[]){{0, 2 * 150000000}}, NULL);
+	}
+
+
+	for (int i = 0; i < note_count; i++) state[i] = falling;
+	nanosleep((const struct timespec[]){{2, 0}}, NULL);
+	exit(0);
+
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//	struct sigaction action2 = {.sa_handler = interrupted}; 
+//	sigaction(SIGINT, &action2, NULL);
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+		if (turning_off0) {
+			if (_0.volume > cut_off_vol) _0.volume *= (1 - decay_speed);
+			else { turning_off0 = 0; _0.volume = 0.0f; }
+		} else if (turning_on0) {
+			if (_0.volume < max_vol) { if (_0.volume < start_vol) _0.volume += start_vol; _0.volume *= (1 + start_speed); }
+			else { turning_on0 = 0; _0.volume = max_vol; }
+		}
+
+		if (turning_off1) {
+			if (_1.volume > cut_off_vol) _1.volume *= (1 - decay_speed);
+			else { turning_off1 = 0; _1.volume = 0.0f; }
+		} else if (turning_on1) {
+			if (_1.volume < max_vol) { if (_1.volume < start_vol) _1.volume += start_vol; _1.volume *= (1 + start_speed); }
+			else { turning_on1 = 0; _1.volume = max_vol; }
+		}
+
+		if (turning_off2) {
+			if (_2.volume > cut_off_vol) _2.volume *= (1 - decay_speed);
+			else { turning_off2 = 0; _2.volume = 0.0f; }
+		} else if (turning_on2) {
+			if (_2.volume < max_vol) { if (_2.volume < start_vol) _2.volume += start_vol; _2.volume *= (1 + start_speed); }
+			else { turning_on2 = 0; _2.volume = max_vol; }
+		}
+
+
+*/
+
+
+
+
+
+//static const float  A4_OSC = 2 * (float) sample_rate / (440.000f);
+//static const float  E4_OSC = 2 * (float) sample_rate / (329.628f);
+//static const float Cs4_OSC = 2 * (float) sample_rate / (277.183f);
+
+
+
+
+
+
+
+
+
+/*
+	for (int i = 0; i < sample_count * 2; i++) {
+
+		const float f0 = sinf(notes[0].step) * notes[0].volume;
+		const float f1 = sinf(notes[1].step) * notes[1].volume;
+		const float f2 = sinf(notes[2].step) * notes[2].volume;
+
+		output[i] = f0 + f1 + f2;
+
+		notes[0].step = fmodf(notes[0].step + (2 * M_PI) / (2 * (float) sample_rate / (freq[0])), 2 * M_PI);
+		notes[1].step = fmodf(notes[1].step + (2 * M_PI) / (2 * (float) sample_rate / (freq[1])), 2 * M_PI);
+		notes[2].step = fmodf(notes[2].step + (2 * M_PI) / (2 * (float) sample_rate / (freq[2])), 2 * M_PI);
+
+		if (state[0] == falling) {
+			if (notes[0].volume > cut_off_vol) notes[0].volume *= (1 - decay_speed);
+			else { state[0] = sustained; notes[0].volume = 0.0f; }
+		} else if (state[0] == rising) {
+			if (notes[0].volume < max_vol) { if (notes[0].volume < start_vol) notes[0].volume += start_vol; notes[0].volume *= (1 + start_speed); }
+			else { state[0] = 0; notes[0].volume = max_vol; }
+		}
+
+		if (state[1] == falling) {
+			if (notes[1].volume > cut_off_vol) notes[1].volume *= (1 - decay_speed);
+			else { state[1] = sustained; notes[1].volume = 0.0f; }
+		} else if (state[1] == rising) {
+			if (notes[1].volume < max_vol) { if (notes[1].volume < start_vol) notes[1].volume += start_vol; notes[1].volume *= (1 + start_speed); }
+			else { state[1] = 0; notes[1].volume = max_vol; }
+		}
+
+		if (state[2] == falling) {
+			if (notes[2].volume > cut_off_vol) notes[2].volume *= (1 - decay_speed);
+			else { state[2] = sustained; notes[2].volume = 0.0f; }
+		} else if (state[2] == rising) {
+			if (notes[2].volume < max_vol) { if (notes[2].volume < start_vol) notes[2].volume += start_vol; notes[2].volume *= (1 + start_speed); }
+			else { state[2] = 0; notes[2].volume = max_vol; }
+		}
+	}
+
+*/
+
+
+
+
+
+
+
+
+//277.183f, 329.628f, 440.000f, 
+
+
+
+
+//const int duration[] = { 1,   1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, };
+
+
+
+
+
+//nanosleep((const struct timespec[]){{0, 2 * 150000000}}, NULL);
+	//nanosleep((const struct timespec[]){{0, 2 * 40000000}}, NULL);
+	//nanosleep((const struct timespec[]){{2, 0}}, NULL);
+	//exit(0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+

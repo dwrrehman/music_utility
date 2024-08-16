@@ -1,0 +1,25 @@
+#!/bin/zsh
+# a file for building c source files using the clang c compiler. 
+
+input_file=c.c
+output_file=run
+
+if [ "release" = "$1" ]; then
+        clang -Ofast $input_file -o $output_file `sdl2-config --cflags --libs` -framework CoreMIDI -framework CoreFoundation
+
+elif [ "small" = "$1" ]; then
+        clang -Os $input_file -o $output_file `sdl2-config --cflags --libs` -framework CoreMIDI -framework CoreFoundation
+
+elif [ "clean" = "$1" ]; then
+        rm -rf $output_file
+        rm -rf $output_file.dSYM
+
+elif [ "" = "$1" ]; then 
+        clang -g -O0 -Weverything -Wno-declaration-after-statement -fsanitize=address,undefined $input_file -o $output_file -ferror-limit=1 `sdl2-config --cflags --libs` -framework CoreMIDI -framework CoreFoundation
+
+elif [ "check" = "$1" ]; then 
+        clang --analyze -Weverything -Wno-declaration-after-statement $input_file
+
+else 
+        echo "build: unknown target: $1"
+fi
