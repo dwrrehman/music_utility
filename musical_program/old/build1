@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+
+
+
+clang -g -O3 -ferror-limit=1 -Weverything -Wno-declaration-after-statement c.c -fsanitize=address,undefined `sdl2-config --cflags --libs` -o run
+
+
+

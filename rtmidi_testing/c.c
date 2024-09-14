@@ -102,7 +102,7 @@ static int melody_index = melody_count;
 static int counter = 0;
 
 
-#define debug 0
+#define debug 1
 
 
 #include <stdatomic.h>

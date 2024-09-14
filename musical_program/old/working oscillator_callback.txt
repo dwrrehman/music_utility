@@ -1,0 +1,37 @@
+static void oscillator_callback(
+	void* userdata, 
+	Uint8* stream, int len
+) {
+	float* output = (float*) stream;
+
+	for (int _i = 0; _i < sample_count * 2; _i++) {
+		for (int n = 0; n < note_count; n++) {
+
+			if (notes[n].volume <= 0.0f) continue;
+			output[_i] += sinf(notes[n].step) * notes[n].volume;
+			notes[n].step = fmodf(notes[n].step + 
+					tau / (f_sample_rate / (freq[n])), tau);
+
+			if (state[n] == rising) {
+
+				if (notes[n].volume > cut_off_vol) 
+					notes[n].volume *= (1 - decay_speed);
+				else { 
+					state[n] = 0; 
+					notes[n].volume = 0.0f; 
+				}
+
+			} else if (state[n] == falling) {
+
+				if (notes[n].volume < max_vol) { 
+					if (notes[n].volume < start_vol) 
+						notes[n].volume += start_vol; 
+					notes[n].volume *= (1 + start_speed); 
+				} else { 
+					state[n] = 0; 
+					notes[n].volume = max_vol; 
+				}
+			}
+		}
+	}
+}
