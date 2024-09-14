@@ -160,11 +160,16 @@ int main(void) {
 	const nat fifth = (G4 - C4);
 	const nat fourth = (F4 - C4);
 	const nat major_third = (E4 - C4);
+	const nat major_second = (D4 - C4);
 
-	const nat max_range = 48;
+	const nat max_range = 24;
 	const nat timesteps = 1000;
-
 	nat voices[2] = {0};
+
+
+	const nat base = C3;
+
+
 
 	//printf("fourth = %llu\n", fourth);
 	//printf("fifth = %llu\n", fifth);
@@ -172,21 +177,26 @@ int main(void) {
 
 	for (nat timestep = 0; timestep < timesteps; timestep += 1) {
 		if (timestep % 5 == 0) {
-			state[C2 + ((voices[0] + fifth) % max_range)] = rising;
-			state[C2 + ((voices[0]) % max_range)] = falling;
+			state[base + ((voices[0] + fifth) % max_range)] = rising;
+			state[base + ((voices[0]) % max_range)] = falling;
 			voices[0] += fifth;
 		}
-		if (timestep % 4 == 0) {
-			state[G2 + ((voices[1] + fourth) % max_range)] = rising;
-			state[G2 + ((voices[1]) % max_range)] = falling;
+		if (timestep % 3 == 0) {
+			state[base + ((voices[1] + fourth) % max_range)] = rising;
+			state[base + ((voices[1]) % max_range)] = falling;
 			voices[1] += fourth;
 		}
-		/*if (timestep % 3 == 0) {
-			state[G2 + ((voices[1] + major_third) % max_range)] = rising;
-			state[G2 + ((voices[1]) % max_range)] = falling;
+		if (timestep % 11 == 0) {
+			state[base + ((voices[1] + major_third) % max_range)] = rising;
+			state[base + ((voices[1]) % max_range)] = falling;
 			voices[1] += major_third;
-		}*/
-		usleep(200000);
+		}
+		if (timestep % 7 == 0) {
+			state[base + ((voices[1] + major_second) % max_range)] = rising;
+			state[base + ((voices[1]) % max_range)] = falling;
+			voices[1] += major_second;
+		}
+		usleep(400000);
 	}
 
 	for (nat i = 0; i < note_count; i++) state[i] = falling;
