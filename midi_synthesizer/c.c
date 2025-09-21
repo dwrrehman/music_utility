@@ -45,8 +45,8 @@ static const float tau = (float) (2.0 * M_PI);
 static const float start_vol = 0.00005f;
 static const float cut_off_vol = 0.00001f;
 static const float max_vol = 0.05f;
-static const float start_speed = 0.003f;
-static const float decay_speed = 0.00004f;
+static const float start_speed = 0.0030f;
+static const float decay_speed = 0.000018f;
 
 enum note_names { 
 	C0, Db0, D0, Eb0, E0, F0, Gb0, G0, Ab0, A0, Bb0, B0,
@@ -177,54 +177,100 @@ static void oscillator_callback(
 }
 
 
+static void get_datetime(char datetime[32]) {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	struct tm* tm_info = localtime(&tv.tv_sec);
+	strftime(datetime, 32, "1%Y%m%d%u.%H%M%S", tm_info);
+}
 
+static char filename[4096] = {0};
 
+static void append_string_to_file(char* string, size_t length) {	
+	int flags = O_WRONLY | O_APPEND;
+	mode_t permissions = 0;
+try_open:;
+	const int file = open(filename, flags, permissions);
+	if (file < 0) {
+		if (permissions) {
+			perror("create openat file");
+			printf("failed to create filename = \"%s\"\n", filename);
+			fflush(stdout);
+			abort();
+		}
+		char dt[32] = {0};  
+		get_datetime(dt);
+		snprintf(filename, 4096, "midi_capture_%s_%08x%08x%08x%08x.txt", dt, 
+			rand(), rand(), rand(), rand()
+		);
+		flags = O_CREAT | O_WRONLY | O_APPEND | O_EXCL;
+		permissions = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+		goto try_open;
+	}
+	write(file, string, length);	
+	close(file);	
+}
 
+static const bool record_midi = true;
+
+// time action channel 
 static void midi_packet_handler(const MIDIPacketList* pktlist, void* refCon, void* connRefCon) {
 
 	const MIDIPacket* packet = pktlist->packet;
-
 	size_t type = 0, index = 0, bend = 0, channel = 0, note = 0;
+
+	char out_string[4096] = {0}; 
+	size_t out_length = 0;
+
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	const size_t right_now = 1000000 * now.tv_sec + now.tv_usec;
+	if (debug) printf("\033[36m[NOW: %lx]: \033[0m", right_now);
+
+	if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, ".%lx ", right_now);
 
 	for (size_t j = 0; j < pktlist->numPackets; j++) {
 		for (size_t i = 0; i < packet->length; i++) {
 
-
 			const byte b = packet->data[i];
-
 			if ((b >> 7) == 1) {
-
 				channel = (size_t) (b & 0xF);
-
 				if (debug) printf("\n");
 				index = 0;
 
 				if ((b >> 4) == 0x8) {
 					if (debug) printf("(\033[33;1mNOTE_OFF\033[m)(channel=%lu) ", channel);
+					if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "1 %lu ", channel);
 					type = note_off;
 
 				} else if ((b >> 4) == 0x9) {
 					if (debug) printf("(\033[32;1mNOTE_ON\033[m)(channel=%lu) ", channel);
+					if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "2 %lu ", channel);
 					type = note_on;
 
 				} else if ((b >> 4) == 0xA) {
 					if (debug) printf("(\033[36;1mPOLY_PRESSURE\033[m)(channel=%lu) ", channel);
+					if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "3 %lu ", channel);
 					type = poly_pressure;
 
 				} else if ((b >> 4) == 0xB) {
 					if (debug) printf("(\033[31;1mCONTROL_CHANGE\033[m)(channel=%lu) ", channel);
+					if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "4 %lu ", channel);
 					type = control_change;
 
 				} else if ((b >> 4) == 0xC) {
 					if (debug) printf("(\033[31;1mPROGRAM_CHANGE\033[m)(channel=%lu) ", channel);
+					if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "5 %lu ", channel);
 					type = program_change;
 
 				} else if ((b >> 4) == 0xD) {
 					if (debug) printf("(\033[35;1mCHANNEL_PRESSURE\033[m)(channel=%lu) ", channel);
+					if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "6 %lu ", channel);
 					type = channel_pressure;
 
 				} else if ((b >> 4) == 0xE) {
 					if (debug) printf("(\033[34;1mPITCH_BEND\033[m)(channel=%lu) ", channel);
+					if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "7 %lu ", channel);
 					type = pitch_bend;
 					bend = 0;
 
@@ -235,8 +281,9 @@ static void midi_packet_handler(const MIDIPacketList* pktlist, void* refCon, voi
 			} else {
 				if (type == note_off) {
 
-					if (index == 0) { 
+					if (index == 0) {
 						if (debug) printf("note#:%d ", b); 
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d ", b);
 						index = 1; note = b;
 
 					} else if (index == 1) { 
@@ -248,12 +295,14 @@ static void midi_packet_handler(const MIDIPacketList* pktlist, void* refCon, voi
 							printf("ERROR: note = %lu\n", note);
 						}
 						if (debug) puts("");
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d\n", b);
 
 					} else abort();
 
 				} else if (type == note_on) {
 					if (index == 0) { 
 						if (debug) printf("note#:%d ", b); 
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d ", b);
 						index = 1; note = b;
 
 					} else if (index == 1) { 
@@ -265,16 +314,20 @@ static void midi_packet_handler(const MIDIPacketList* pktlist, void* refCon, voi
 							printf("ERROR: note = %lu\n", note);
 						}
 						if (debug) puts(""); 
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d\n", b);
 
 					} else abort();
 
 				} else if (type == control_change) {
 					if (index == 0) { 
 						if (debug) printf("controller:%d ", b); 
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d ", b);
 						index = 1; 
 					}
 					else if (index == 1) { 
-						if (debug) printf("value:%d ", b); 
+						if (debug) printf("value:%d\n", b); 
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d\n", b);
+
 						index = 0; 
 					}
 					else abort();
@@ -284,12 +337,15 @@ static void midi_packet_handler(const MIDIPacketList* pktlist, void* refCon, voi
 					else if (index == 1) { 
 						bend |= (size_t) b << 7LU; 
 						if (debug) printf(". BEND:%04hX ", (signed short) (bend - 8192)); 
-						index = 0; }
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%u ", (signed short) (bend - 8192));
+						index = 0; 
+					}
 					else abort();
 
 				} else if (type == channel_pressure) {
 					if (index == 0) { 
-						if (debug) printf("pressure:%d ", b); 
+						if (debug) printf("pressure:%d\n", b); 
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d\n", b);
 						index = 0; 
 					}
 					else abort();
@@ -297,10 +353,12 @@ static void midi_packet_handler(const MIDIPacketList* pktlist, void* refCon, voi
 				} else if (type == poly_pressure) {
 					if (index == 0) { 
 						if (debug) printf("note#:%d ", b); 
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d ", b);
 						index = 1; 
 					}
 					else if (index == 1) { 
-						if (debug) printf("pressure:%d ", b); 
+						if (debug) printf("pressure:%d\n", b); 
+						if (record_midi) out_length += (size_t) snprintf(out_string + out_length, 4096, "%d\n", b);
 						index = 0; 
 					}
 					else abort();
@@ -312,7 +370,15 @@ static void midi_packet_handler(const MIDIPacketList* pktlist, void* refCon, voi
 		}
 		packet = MIDIPacketNext(packet);
 	}
+
+	if (record_midi) {
+		if(debug) {
+			printf("WRITING TO FILE:(%lu)\n<<<%s>>>\n", out_length, out_string);
+		}
+		append_string_to_file(out_string, out_length);
+	}
 }
+
 
 int main(void) { 
 
@@ -393,13 +459,14 @@ int main(void) {
 		.callback = oscillator_callback,
 	};
 
-	if (SDL_OpenAudio(&spec, NULL) < 0) {
+	const bool enable_midi_synth = false;
+
+	if (enable_midi_synth and SDL_OpenAudio(&spec, NULL) < 0) {
 		printf("%s\n", SDL_GetError());
 		exit(1);
 	}
 
-
-	SDL_PauseAudio(0);
+	if (enable_midi_synth) SDL_PauseAudio(0);
  	CFRunLoopRun();
 }
 
